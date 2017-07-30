@@ -6,18 +6,45 @@ library(rpart)
 library(readr)
 library(dplyr)
 
-# Student assessment data
+ 
+# Student assessment data -- Merges assessments and studentAssessments (student scores)
 studentAssessment <- read_csv("data/OULAD/studentAssessment.csv")
-# Demographic data
+assessments <- read_csv("data/OULAD/assessments.csv")
+studentAssessment <- merge(x = studentAssessment,
+                           y = assessments,
+                           by = c("id_assessment"))
+# Demographic data -- Merges studentInfo and studentRegistration information
 studentInfo <- read.table(header = TRUE,sep = ",",'data/OULAD/studentInfo.csv')
 studentRegistration <- read_csv("data/OULAD/studentRegistration.csv")
-# testMerge = merge(studentInfo, studentAssessment, "id_student")
 
-# join data based on student_id
-studentScores <- merge(x = studentAssessment, y = studentInfo, by = "id_student")
+# Join demographic data together
+demographics <- merge(x = studentInfo, 
+                      y = studentRegistration, 
+                      by = c("id_student","code_module", "code_presentation"))
+demographics <- subset(demographics, select = -c(date_unregistration))
+
+didFail <- subset(demographics, select = c(id_student, final_result))
+# Assessments students with final_result
+studentScores <- merge(x = studentAssessment,
+                       y = didFail,
+                       by = c("id_student"),
+                       all.x = TRUE)
+studentScores <- na.omit(studentScores)
+studentScores <- subset(studentScores, select = -c(id_student))
+
+summary(demographics)
+summary(studentScores)
+# break data down by semester
+semesters <- c('2013B','2013J','2014B','2013J')
+
+scoreWeights <- information.gain(final_result~., data=studentScores, unit="log2")
+# Just to check the information gain of the attributes, student_ids and date_unregistration isn't helpful so remove them
+demoAttrs <- subset(demographics, select = -c(id_student,date_unregistration))
 # summary(subset(studentInfo, code_module=='FFF'))
 
-# final_result "distinction" is considered excellence in this case
+# demographic attribute weights
+demoWeights <- information.gain(final_result~., data=demoAttrs, unit="log2")
+
 students2013 <- subset(studentInfo, code_presentation=='2013J' | code_presentation=='2013B')
 students2014 <- subset(studentInfo, code_presentation=='2014J' | code_presentation=='2014B')
 
@@ -37,20 +64,5 @@ print(summary(students2014$final_result))
 print("all students")
 print(summary(studentInfo$final_result))
 
-fit <- rpart(final_result ~ .,
-             data=studentInfo,
-             method="class")
-
-printcp(fit) # display the results 
-plotcp(fit) # visualize cross-validation results 
-summary(fit) # detailed summary of splits
-
-# create additional plots 
-par(mfrow=c(1,2)) # two plots on one page 
-rsq.rpart(fit) # visualize cross-validation results 
-
-plot(fit, uniform=TRUE, 
-     main="Regression Tree for Student Info ")
-text(fit, use.n=TRUE, all=TRUE, cex=.8)
-
+# kmeans on studentScores
 
