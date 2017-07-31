@@ -9,6 +9,7 @@ library(tidyverse)
 library(FactoMineR) # PCA
 library(factoextra) # distance and visualizations
 library(mlr) # svm, boosting, random forests, nn..
+library(class)
 
 # Student assessment data -- Merges assessments and studentAssessments (student scores)
 studentAssessment <- read_csv("data/OULAD/studentAssessment.csv")
@@ -36,6 +37,10 @@ studentScores <- na.omit(studentScores)
 studentScores <- subset(studentScores, select = -c(id_student, is_banked))
 scores2013 <- subset(studentScores, code_presentation == '2013B', select = -c(code_presentation))
 
+dset <- head(studentScores, 3000)
+trainset <- head(dset, 1000)
+testset <- tail(dset, 2000)
+
 # make all columns factors
 # studentScores <- lapply( studentScores, factor)
 
@@ -53,14 +58,8 @@ testPca <- PCA(scores2013, graph = FALSE)
 
 scores2013 <- data.frame(matrix(unlist(scores2013), byrow=T))
 # standardize the data
-k2 <- kmeans(scores2013, centers = 2, n = 25)
+# k2 <- kmeans(scores2013, centers = 2, n = 25)
 
-fviz_cluster(k2, data = scores2013)
 summary(demographics)
 summary(studentScores)
-# break data down by semester
-semesters <- c('2013B','2013J','2014B','2013J')
-
-
-# kmeans on studentScores
 
