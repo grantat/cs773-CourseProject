@@ -35,6 +35,12 @@ studentScores <- merge(x = studentAssessment,
                        all.x = TRUE)
 studentScores <- na.omit(studentScores)
 studentScores <- subset(studentScores, select = -c(id_student, is_banked))
+studentScores$final_result[studentScores$final_result =='Withdrawn'] <- 'Fail'
+studentScores$final_result[studentScores$final_result =='Distinction'] <- 'Pass'
+
+# Write CSV in R
+# write.csv(studentScores, file = "data/custom/studentScores.csv", row.names = FALSE, na="")
+
 scores2013 <- subset(studentScores, code_presentation == '2013B', select = -c(code_presentation))
 
 dset <- head(studentScores, 3000)
@@ -50,13 +56,13 @@ scores2013 <- data.frame(lapply(scores2013, as.numeric))
 scores2013 <- head(scores2013, 50)
 testPca <- PCA(scores2013, graph = FALSE)
 
-# fviz_pca_ind(testPca,
-#              label = "none",
-#              habillage = scores2013$final_result,
-#              palette = "Dark2",
-#              addEllipses = FALSE)
+fviz_pca_ind(testPca,
+             label = "none",
+             habillage = scores2013$final_result,
+             palette = "Dark2",
+             addEllipses = FALSE)
 
-scores2013 <- data.frame(matrix(unlist(scores2013), byrow=T))
+# scores2013 <- data.frame(matrix(unlist(scores2013), byrow=T))
 # standardize the data
 # k2 <- kmeans(scores2013, centers = 2, n = 25)
 

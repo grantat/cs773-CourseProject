@@ -1,6 +1,6 @@
 setwd(getwd())
 library(ggplot2)
-library(FSelector)
+library(FSelector) # information gain
 library(e1071)
 library(rpart)
 library(readr)
@@ -39,7 +39,7 @@ semesters <- c('2013B','2013J','2014B','2013J')
 
 scoreWeights <- information.gain(final_result~., data=studentScores, unit="log2")
 # Just to check the information gain of the attributes, student_ids and date_unregistration isn't helpful so remove them
-demoAttrs <- subset(demographics, select = -c(id_student,date_unregistration))
+demoAttrs <- subset(demographics, select = -c(id_student))
 # summary(subset(studentInfo, code_module=='FFF'))
 
 # demographic attribute weights
